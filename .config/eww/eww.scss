@@ -1,0 +1,62 @@
+* {
+  all: unset;
+}
+
+.bar {
+  font-size: 0.9rem;
+  background-color: #121212;
+  color: #FFFFFF;
+}
+
+.workspaces button {
+  padding: 2px 5px;
+}
+
+.workspaces button.ws-occupied {
+  border-bottom: 2px solid #FA34D6;
+  background: linear-gradient(to top, rgba(250, 52, 214, 0.3) 0%, rgba(250, 52, 214, 0) 100%);
+}
+
+.workspaces button.ws-empty {
+  opacity: 0.5;
+}
+
+.workspaces button.ws-focused {
+  border-bottom: 2px solid #A6C8FF;
+  background: linear-gradient(to top, rgba(166, 200, 255, 0.3) 0%, rgba(166, 200, 255, 0) 100%);
+}
+
+.sound-hidden {
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.sound-visible {
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.battery-hidden {
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.battery-visible {
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.brightness-hidden {
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.brightness-visible {
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.time-full {
+  padding: 6px;
+  background-color: #121212;
+}

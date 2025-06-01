@@ -1,0 +1,25 @@
+/* ~/.config/gtk-3.0/gtk.css */
+window, popover, menu, .popup-menu {
+  background-color: #2e2e2e;
+  color: #ffffff;
+}
+
+menu menuitem,
+popover menuitem,
+.menu menuitem {
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin: 2px 4px;
+}
+
+menu menuitem:hover,
+menu menuitem:selected,
+popover menuitem:hover,
+popover menuitem:selected,
+.menu menuitem:hover,
+.menu menuitem:selected {
+    background-color: #3d3d3d;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
