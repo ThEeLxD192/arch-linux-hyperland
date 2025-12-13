@@ -1,0 +1,34 @@
+.bar-center {
+    @include bar-base;
+
+    * {
+        all: unset;
+        font-family: "JetBrainsMonoNL Nerd Font";
+        background-color: transparent;
+        font-size: 12px;
+    }
+
+    /* Workspaces */
+    .workspaces {
+        padding: 4px 0;
+
+        label {
+            padding: 0 6px;
+            color: $disabled;
+            font-weight: bold;
+            font-size: 12px;
+
+            &.ws-occupied {
+                color: $secondary;
+            }
+
+            &.ws-empty {
+                color: $disabled;
+            }
+
+            &.ws-focused {
+                color: $primary;
+            }
+        }
+    }
+}

@@ -1,0 +1,78 @@
+.bar-right {
+    @include bar-base;
+
+    * {
+        all: unset;
+        font-family: "JetBrainsMonoNL Nerd Font";
+        background-color: transparent;
+        font-size: 12px;
+    }
+
+    .endstuff {
+        padding: 4px 0;
+
+        >box {
+            margin-left: 8px;
+        }
+    }
+
+    /* Battery */
+    .battery-container {
+        color: $fg; 
+    }
+
+    /* Network */
+    .network {
+        color: $success;
+        min-width: 150px;
+    }
+
+    /* RAM */
+    .ram {
+        color: $warning;
+    }
+
+    /* Sound */
+    .sound {
+        color: $secondary;
+        padding: 0 4px;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    /* Manager */
+    .manager {
+        color: $alert;
+        padding: 0 4px;
+    }
+
+    .manager-panel {
+        background-color: #313244;
+        padding: 4px 8px;
+        margin-left: 8px;
+        opacity: 0;
+        transition: opacity 300ms ease;
+
+        button {
+            padding: 2px 6px;
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        &.manager-visible {
+            opacity: 1;
+        }
+    }
+}
+
+tooltip {
+    label {
+        color: $fg;
+    }
+}
+

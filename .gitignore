@@ -1,0 +1,12 @@
+# --- Archivos Generados por install.sh (Hardware Específico) ---
+
+# Configuración de Hyprland (Monitores, Teclado, Tablets)
+hypr/monitors.conf
+hypr/input.conf
+hypr/hardware.conf
+
+# Configuración de Eww (Interfaz de Red detectada)
+eww/scripts/target_interface
+
+# Carpetas temporales o de compilación
+paru/

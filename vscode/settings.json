@@ -1,0 +1,9 @@
+{
+    "security.workspace.trust.untrustedFiles": "open",
+    "editor.fontFamily": "'JetBrainsMonoNL Nerd Font'",
+    "editor.fontLigatures": true,
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "editor.lineHeight": 20,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4
+}

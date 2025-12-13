@@ -1,0 +1,22 @@
+$bg: #1e1e2e;
+$fg: #cdd6f4;
+$primary: #cba6f7;
+$secondary: #f5c2e7;
+$alert: #f38ba8;
+$success: #a6e3a1;
+$warning: #fab387;
+$disabled: #585b70;
+
+@mixin bar-base {
+  background-color: $bg;
+  padding: 0 12px;
+  color: $fg;
+  border: 1.5px solid $disabled;
+}
+
+/* Imports */
+@import "bar_left.scss";
+@import "bar_center.scss";
+@import "bar_right.scss";
+@import "sound_window.scss";
+@import "manager_window.scss";

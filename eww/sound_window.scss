@@ -1,0 +1,45 @@
+.sound-window-box {
+    background-color: $bg;
+    color: $fg;
+    padding: 12px;
+    border: 1.5px solid $disabled;
+
+    * {
+        all: unset;
+        font-family: "JetBrainsMonoNL Nerd Font";
+        font-size: 12px;
+    }
+
+    .app-name-label {
+        font-weight: bold;
+        padding: 10px 0;
+    }
+
+    .tooltip-label {
+        padding: 6px;
+        background-color: $bg;
+    }
+
+    .volume-label {
+        min-width: 35px;
+    }
+
+    /* Sound window props */
+    scale.input-sound highlight {
+        background-color: $primary;
+    }
+
+    scale.input-sound trough {
+        background-color: $disabled;
+        min-height: 4px;
+    }
+
+    scale.output-sound highlight {
+        background-color: $secondary;
+    }
+
+    scale.output-sound trough {
+        background-color: $disabled;
+        min-height: 4px;
+    }
+}

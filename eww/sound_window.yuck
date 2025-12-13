@@ -1,0 +1,71 @@
+; Def variables to use in this sound_window ;
+(deflisten sliders_values "./scripts/volume_script.sh")
+
+(defwindow sound_window
+  :monitor 1
+  :geometry (geometry
+    :x "12px"
+    :y "45px"
+    :width "15%"
+    :anchor "top right"
+  )
+  :stacking "overlay"
+  :exclusive false
+  (box
+    :orientation "v"
+    :hexpand true
+    :class "sound-window-box"
+    :space-evenly false
+    (for items in sliders_values
+      (box
+        :orientation "v"
+        :space-evenly false
+        :spacing 5
+        (label
+          :text {items.app_name}
+          :halign "center"
+          :class "app-name-label"
+        )
+        (for item in {items.apps}
+          (audio_slider
+            :id "${item.id}"
+            :name "${item.name}"
+            :volume {item.volume}
+            :type "${item.type}"
+            :is_muted "${item.is_muted}"
+          )
+        )
+      )
+    )
+  )
+)
+
+(defwidget audio_slider [id name volume type is_muted]
+  (box
+    :orientation "h"
+    :space-evenly false
+    :spacing 10
+    :hexpand true
+    
+    (tooltip :hexpand true
+      (label :text {name} :class "tooltip-label")
+      (eventbox
+        :hexpand true
+        :onhover "touch /tmp/eww_volume_lock_${id}"
+        :onhoverlost "rm /tmp/eww_volume_lock_${id}"
+        (scale
+          :value {volume}
+          :class {type == "input" ? "input-sound" : "output-sound"}
+          :min 0
+          :max 100
+          :round-digits 0
+          :onchange "wpctl set-volume ${id} {}%"
+        )
+      )
+    )
+    (eventbox
+      :onclick "wpctl set-mute ${id} toggle"
+      (label :halign "end" :class "volume-label" :text {is_muted == true ? "󰝟 " : "${volume}%"})
+    )
+  )
+)

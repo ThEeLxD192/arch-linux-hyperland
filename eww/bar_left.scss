@@ -1,0 +1,14 @@
+.bar-left {
+    @include bar-base;
+
+    * {
+        all: unset;
+        font-family: "JetBrainsMonoNL Nerd Font";
+        background-color: transparent;
+        font-size: 12px;
+    }
+
+    .startstuff {
+        padding: 4px 0;
+    }
+}

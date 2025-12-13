@@ -1,0 +1,223 @@
+; Other windows ;
+(include "./sound_window.yuck")
+(include "./manager_window.yuck")
+
+; Def variables to use in this bar ;
+(deflisten ws_states "./scripts/ws_listener.sh")
+(deflisten network_stats "./scripts/red_status.sh")
+(defpoll time-full :interval "30s" "date '+%H:%M %b %d, %Y'")
+(defpoll time-short :interval "30s" "date '+%d/%m/%Y'")
+(defvar is-manager-visible false)
+(defpoll has-battery :interval "24h"
+ "sh -c 'ls /sys/class/power_supply/BAT* > /dev/null 2>&1 && echo true || echo false'")
+
+; This are the items from the last part of bar ;
+(defwidget endstuff []
+  (box :class "endstuff" :orientation "h" :spacing 8 :space-evenly false :halign "end" :valign "center"
+    (ram)
+    (network)
+    (battery-widget)
+    (time)
+    (sound)
+    (manager)
+  )
+)
+
+; This are the items from the start part of bar ;
+(defwidget startstuff []
+  (box :class "startstuff" :orientation "h" :spacing 8 :space-evenly false :halign "start" :valign "center"
+    (systray-widget)
+  )
+)
+
+; This widget is for workspaces ;
+(defwidget workspace [num icon]
+  (label
+    :class {
+    ws_states[num] == "active" ? "ws-focused" :
+    ws_states[num] == "occupied" ? "ws-occupied" :
+    "ws-empty"
+    }
+    :text "${icon}"
+  )
+)
+
+(defwidget workspaces []
+  (box :class "workspaces"
+    :orientation "h"
+    :halign "center"
+    :valign "center"
+    :spacing 3
+    (workspace :num "1" :icon "1")
+    (workspace :num "2" :icon "2")
+    (workspace :num "3" :icon "3")
+    (workspace :num "4" :icon "4")
+    (workspace :num "5" :icon "5")
+    (workspace :num "6" :icon "6")
+    (workspace :num "7" :icon "7")
+    (workspace :num "8" :icon "8")
+    (workspace :num "9" :icon "9")
+    (workspace :num "10" :icon "0")
+  )
+)
+
+; This widget is for date ;
+(defwidget time []
+  (box
+    (tooltip
+      (label :text time-full)
+      (label :text time-short)
+    )
+  )
+)
+
+; This widget is for sound ;
+(defwidget sound []
+  (eventbox
+    :class "sound"
+    :onclick "bash -c 'eww open sound_window --toggle; rm -f /tmp/eww_volume_lock_*'"
+    (label :text " ")
+  )
+)
+
+; This widget is for network ;
+(defwidget network []
+  (box
+    :class "network"
+    :spacing 2
+    (label :text "↓${network_stats.download_value}")
+    (label :text "↑${network_stats.upload_value}")
+  )
+)
+
+; This widget is for RAM usage ;
+(defwidget ram []
+  (box
+    :class "ram"
+    (label :text "RAM: ${round(EWW_RAM.used_mem / 1073741824, 1)} GB/${round(EWW_RAM.total_mem / 1073741824, 1)} GB")
+  )
+)
+
+; This widget is for systray icons ;
+(defwidget systray-widget []
+  (systray
+    :spacing 6
+    :orientation "h"
+    :icon-size 18
+    :prepend-new true
+  )
+)
+
+; This widget is for battery (this is for laptops)
+(defwidget battery-widget []
+  (box 
+    :class "battery-container"
+    :visible has-battery
+    (tooltip
+      (label 
+        :text {round(EWW_BATTERY["BAT0"]?.capacity || 0, 0) + "%"}
+      )
+      (label
+        :text {
+          EWW_BATTERY["BAT0"]?.status == "Charging" ? "" :  
+          EWW_BATTERY["BAT0"]?.status == "Full"     ? "" :
+          EWW_BATTERY["BAT0"]?.capacity > 80 ? "" :
+          EWW_BATTERY["BAT0"]?.capacity > 60 ? "" :
+          EWW_BATTERY["BAT0"]?.capacity > 40 ? "" :
+          EWW_BATTERY["BAT0"]?.capacity > 20 ? "" :
+                                              ""
+        }
+      )
+    )
+  )
+)
+
+; This widget is for restart, power off and logout ;
+(defwidget manager []
+  (eventbox
+    :class "manager"
+    :onhover "eww update is-manager-visible=true"
+    :onhoverlost "eww update is-manager-visible=false"
+    (box
+      :space-evenly false
+      :orientation "h"
+      :valign "center"
+      (label :text "󰍜")
+      (revealer
+        :transition "slideright"
+        :reveal is-manager-visible
+        (box
+          :class {
+          is-manager-visible ? "manager-panel manager-visible" : "manager-panel"
+          }
+          :style "padding-left: 10px;"
+          :spacing 10
+          :space-evenly false
+          :orientation "h"
+          :valign "center"
+          (button
+            :onclick "eww update power_dialog_action='poweroff' && eww open manager_window --toggle && eww update is-manager-visible=false"
+            (label :text "")
+          )
+          (button
+            :onclick "eww update power_dialog_action='reboot' && eww open manager_window --toggle && eww update is-manager-visible=false"
+            (label :text "")
+          )
+          (button
+            :onclick "eww update power_dialog_action='logout' && eww open manager_window --toggle && eww update is-manager-visible=false"
+            (label :text "󰍃")
+          )
+        )
+      )
+    )
+  )
+)
+
+
+; This is the main bar ;
+; Left Bar Window
+(defwindow bar_left
+  :monitor 1
+  :stacking "fg"
+  :geometry (geometry :x "1%"
+    :y "0.5%"
+    :height "40px"
+  :anchor "top left")
+  (box :class "bar-left"
+    :orientation "h"
+    :space-evenly false
+    (startstuff)
+  )
+)
+
+; Center Bar Window
+(defwindow bar_center
+  :monitor 1
+  :exclusive false
+  :stacking "fg"
+  :geometry (geometry :x "0%"
+    :y "0.5%"
+    :height "40px"
+  :anchor "top center")
+  (box :class "bar-center"
+    :orientation "h"
+    :halign "center"
+    (workspaces)
+  )
+)
+
+; Right Bar Window
+(defwindow bar_right
+  :monitor 1
+  :stacking "fg"
+  :geometry (geometry :x "1%"
+    :y "0.5%"
+    :height "40px"
+  :anchor "top right")
+  (box :class "bar-right"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    (endstuff)
+  )
+)

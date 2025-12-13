@@ -1,0 +1,40 @@
+/* ~/.config/gtk-3.0/gtk.css */
+menu,
+.menu,
+tooltip {
+  background-color: #2e2e2e;
+  color: #ffffff;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+menu menuitem,
+.menu menuitem {
+  padding: 6px 12px;
+  border-radius: 4px;
+  margin: 2px 0;
+}
+
+menu menuitem:hover,
+.menu menuitem:hover {
+  background-color: #3d3d3d;
+  color: #ffffff;
+}
+
+headerbar,
+window,
+dialog,
+messagedialog,
+.background {
+  margin: 0px;
+  padding: 0px;
+  box-shadow: none;
+  border: none;
+}
+
+decoration,
+.window-frame,
+.window-frame:backdrop {
+  box-shadow: none;
+  margin: 0;
+}
