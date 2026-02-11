@@ -396,6 +396,17 @@ EOF
         echo -e "${GREEN}[OK] monitors.conf generated.${NC}"
     else
         echo -e "${YELLOW}[SKIP] monitors.conf already exists.${NC}"
+        # Read existing primary monitor name from monitors.conf
+        MON_1=$(grep -m1 '^monitor=' "$HYPR_DIR/monitors.conf" | cut -d',' -f1 | cut -d'=' -f2)
+    fi
+
+    # --- E) UPDATE EWW BAR MONITOR ---
+    if [ -n "$MON_1" ]; then
+        EWW_YUCK="$HOME/.config/eww/eww.yuck"
+        if [ -f "$EWW_YUCK" ]; then
+            sed -i "s/:monitor \"[^\"]*\"/:monitor \"$MON_1\"/g" "$EWW_YUCK"
+            echo -e "${GREEN}[OK] Eww bar monitor set to '$MON_1'.${NC}"
+        fi
     fi
 
     # --- D) EXTRA HARDWARE ---
@@ -439,12 +450,12 @@ install_pacman_pkgs
 install_aur_pkgs
 setup_gpu_drivers
 
-# 2. Configure hardware (Network, Keyboard, Monitors)
-setup_hardware
-
-# 3. Link dotfiles and copy system configs
+# 2. Link dotfiles and copy system configs
 link_dotfiles
 copy_system_configs
+
+# 3. Configure hardware (Network, Keyboard, Monitors)
+setup_hardware
 
 # 4. Enable services
 enable_services

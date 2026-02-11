@@ -37,13 +37,15 @@ chmod +x install.sh
 ```
 
 The installer will:
-1. Update the system and install all official + AUR packages
-2. Detect and configure your network interface, keyboard layout, and monitors
-3. Symlink all dotfiles to `~/.config/`
-4. Copy system configs (ZRAM, SDDM, audio, gamemode)
-5. Install the SDDM Catppuccin theme
-6. Enable essential services (NetworkManager, Bluetooth, SDDM)
-7. Set ZSH as the default shell
+1. Enable the `multilib` repository (required for 32-bit Steam/gaming packages)
+2. Update the system and install all official + AUR packages
+3. Ask you to select your **GPU vendor** (AMD / NVIDIA / Intel) and install the appropriate drivers
+4. Symlink all dotfiles to `~/.config/`
+5. Copy system configs (ZRAM, SDDM theme, audio, gamemode)
+6. Detect and configure your **network interface**, **keyboard layout**, and **monitors**
+7. Automatically set the Eww bar to use your primary monitor
+8. Enable essential services (NetworkManager, Bluetooth, SDDM)
+9. Set ZSH as the default shell
 
 After installation, **reboot** to start SDDM and log into Hyprland.
 
@@ -312,6 +314,17 @@ reboot
 <summary><strong>AUR Packages (paru)</strong></summary>
 
 `hyprsunset` `sbctl` `eww-git` `zsh-theme-powerlevel10k-git` `vesktop-bin` `postman-bin` `protonup-qt`
+
+</details>
+
+<details>
+<summary><strong>GPU Drivers (selected during install)</strong></summary>
+
+| Vendor | Packages |
+|---|---|
+| AMD | `mesa` `lib32-mesa` `vulkan-radeon` `lib32-vulkan-radeon` `libva-mesa-driver` `lib32-libva-mesa-driver` |
+| NVIDIA | `nvidia` `nvidia-utils` `lib32-nvidia-utils` `nvidia-settings` |
+| Intel | `mesa` `lib32-mesa` `vulkan-intel` `lib32-vulkan-intel` |
 
 </details>
 
