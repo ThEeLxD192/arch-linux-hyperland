@@ -70,6 +70,50 @@ AUR_PKGS=(
 # ------------------------------------------------------------------------------
 # INSTALLATION FUNCTIONS
 # ------------------------------------------------------------------------------
+enable_multilib() {
+    echo -e "\n${BLUE}=== Enabling multilib repository ===${NC}"
+    if grep -q "^\[multilib\]" /etc/pacman.conf; then
+        echo -e "${GREEN}[SKIP] multilib is already enabled.${NC}"
+    else
+        echo "Uncommenting multilib in /etc/pacman.conf..."
+        sudo sed -i '/^#\[multilib\]/{s/^#//;n;s/^#//}' /etc/pacman.conf
+        echo -e "${GREEN}[OK] multilib repository enabled.${NC}"
+    fi
+}
+
+setup_gpu_drivers() {
+    echo -e "\n${BLUE}=== GPU Driver Setup ===${NC}"
+    echo "Select your GPU vendor:"
+    echo "  1) AMD"
+    echo "  2) NVIDIA"
+    echo "  3) Intel"
+    echo "  4) Skip (install drivers manually later)"
+    echo -n "Option [1-4]: "
+    read GPU_CHOICE
+
+    case "$GPU_CHOICE" in
+        1)
+            GPU_PKGS=("mesa" "lib32-mesa" "vulkan-radeon" "lib32-vulkan-radeon" "libva-mesa-driver" "lib32-libva-mesa-driver")
+            echo -e "${YELLOW}Installing AMD drivers...${NC}"
+            ;;
+        2)
+            GPU_PKGS=("nvidia" "nvidia-utils" "lib32-nvidia-utils" "nvidia-settings")
+            echo -e "${YELLOW}Installing NVIDIA drivers...${NC}"
+            ;;
+        3)
+            GPU_PKGS=("mesa" "lib32-mesa" "vulkan-intel" "lib32-vulkan-intel")
+            echo -e "${YELLOW}Installing Intel drivers...${NC}"
+            ;;
+        *)
+            echo -e "${YELLOW}[SKIP] GPU driver installation skipped.${NC}"
+            return
+            ;;
+    esac
+
+    sudo pacman -S --noconfirm --needed "${GPU_PKGS[@]}"
+    echo -e "${GREEN}[OK] GPU drivers installed.${NC}"
+}
+
 install_pacman_pkgs() {
     echo -e "\n${BLUE}=== Installing Official Packages ===${NC}"
     echo "Syncing package databases..."
@@ -389,9 +433,11 @@ enable_services() {
 # FINAL EXECUTION
 # ------------------------------------------------------------------------------
 
-# 1. Install packages
+# 1. Enable multilib and install packages
+enable_multilib
 install_pacman_pkgs
 install_aur_pkgs
+setup_gpu_drivers
 
 # 2. Configure hardware (Network, Keyboard, Monitors)
 setup_hardware
