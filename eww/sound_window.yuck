@@ -2,7 +2,7 @@
 (deflisten sliders_values "./scripts/volume_script.sh")
 
 (defwindow sound_window
-  :monitor 1
+  :monitor "HDMI-A-1"
   :geometry (geometry
     :x "12px"
     :y "45px"

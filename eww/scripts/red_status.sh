@@ -10,8 +10,6 @@ fi
 
 if [ -z "$IFACE" ]; then IFACE="lo"; fi
 
-IFACE="enp10s0"
-
 print_json() {
     local download=$1
     local upload=$2
@@ -28,12 +26,12 @@ format_speed() {
 }
 
 if ! command -v bc &> /dev/null; then
-    print_json "Error" "bc no está instalado"
+    print_json "Error" "bc is not installed"
     exit 1
 fi
 
 if [ ! -d "/sys/class/net/$IFACE" ]; then
-    print_json "Error" "Interfaz $IFACE no encontrada"
+    print_json "Error" "Interface $IFACE not found"
     exit 1 
 fi
 

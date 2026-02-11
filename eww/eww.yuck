@@ -3,17 +3,23 @@
 (include "./manager_window.yuck")
 
 ; Def variables to use in this bar ;
-(deflisten ws_states "./scripts/ws_listener.sh")
-(deflisten network_stats "./scripts/red_status.sh")
+(deflisten ws_states
+  :initial '{}'
+"./scripts/ws_listener.sh")
+(deflisten network_stats
+  :initial '{"download_value": "Init", "upload_value": "Init"}'
+"./scripts/red_status.sh")
 (defpoll time-full :interval "30s" "date '+%H:%M %b %d, %Y'")
 (defpoll time-short :interval "30s" "date '+%d/%m/%Y'")
 (defvar is-manager-visible false)
 (defpoll has-battery :interval "24h"
- "sh -c 'ls /sys/class/power_supply/BAT* > /dev/null 2>&1 && echo true || echo false'")
+  :initial "false"
+"sh -c 'ls /sys/class/power_supply/BAT* > /dev/null 2>&1 && echo true || echo false'")
 
 ; This are the items from the last part of bar ;
 (defwidget endstuff []
   (box :class "endstuff" :orientation "h" :spacing 8 :space-evenly false :halign "end" :valign "center"
+    (cpu)
     (ram)
     (network)
     (battery-widget)
@@ -90,6 +96,14 @@
   )
 )
 
+; This widget is for CPU usage ;
+(defwidget cpu []
+  (box
+    :class "cpu"
+    (label :text "CPU: ${round(EWW_CPU.avg, 0)}%")
+  )
+)
+
 ; This widget is for RAM usage ;
 (defwidget ram []
   (box
@@ -110,22 +124,23 @@
 
 ; This widget is for battery (this is for laptops)
 (defwidget battery-widget []
-  (box 
+  (box
     :class "battery-container"
-    :visible has-battery
+    :visible { has-battery == "true" }
     (tooltip
-      (label 
-        :text {round(EWW_BATTERY["BAT0"]?.capacity || 0, 0) + "%"}
+      (label
+        :text { has-battery == "true" ? round(EWW_BATTERY["BAT0"]?.capacity ?: 0, 0) + "%" : "" }
       )
       (label
-        :text {
-          EWW_BATTERY["BAT0"]?.status == "Charging" ? "" :  
+        :text { has-battery == "true" ?
+        (EWW_BATTERY["BAT0"]?.status == "Charging" ? "" :
           EWW_BATTERY["BAT0"]?.status == "Full"     ? "" :
           EWW_BATTERY["BAT0"]?.capacity > 80 ? "" :
           EWW_BATTERY["BAT0"]?.capacity > 60 ? "" :
           EWW_BATTERY["BAT0"]?.capacity > 40 ? "" :
           EWW_BATTERY["BAT0"]?.capacity > 20 ? "" :
-                                              ""
+        "")
+        : ""
         }
       )
     )
@@ -177,8 +192,8 @@
 ; This is the main bar ;
 ; Left Bar Window
 (defwindow bar_left
-  :monitor 1
-  :stacking "fg"
+  :monitor "HDMI-A-1"
+  :stacking "bottom"
   :geometry (geometry :x "1%"
     :y "0.5%"
     :height "40px"
@@ -192,9 +207,9 @@
 
 ; Center Bar Window
 (defwindow bar_center
-  :monitor 1
+  :monitor "HDMI-A-1"
   :exclusive false
-  :stacking "fg"
+  :stacking "bottom"
   :geometry (geometry :x "0%"
     :y "0.5%"
     :height "40px"
@@ -208,8 +223,8 @@
 
 ; Right Bar Window
 (defwindow bar_right
-  :monitor 1
-  :stacking "fg"
+  :monitor "HDMI-A-1"
+  :stacking "bottom"
   :geometry (geometry :x "1%"
     :y "0.5%"
     :height "40px"

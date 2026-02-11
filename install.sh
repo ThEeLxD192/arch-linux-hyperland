@@ -1,7 +1,8 @@
 #!/bin/bash
+set -e
 
 # ------------------------------------------------------------------------------
-# 0. VARIABLES Y COLORES
+# 0. VARIABLES AND COLORS
 # ------------------------------------------------------------------------------
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -9,14 +10,14 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-REPO_DIR="$HOME/Repositores/arch-linux-hyperland"
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo -e "${BLUE}==========================================${NC}"
-echo -e "${BLUE}   INSTALADOR DE DOTFILES - ARCH LINUX    ${NC}"
+echo -e "${BLUE}   DOTFILES INSTALLER - ARCH LINUX        ${NC}"
 echo -e "${BLUE}==========================================${NC}"
 
 # ------------------------------------------------------------------------------
-# 1. DEFINICIÓN DE PAQUETES (Oficiales - Pacman)
+# 1. PACKAGE DEFINITIONS (Official - Pacman)
 # ------------------------------------------------------------------------------
 SYS_PKGS=(
     "base-devel" "git" "wget" "curl" "unzip" "zip" "7zip"
@@ -37,7 +38,7 @@ HYPR_PKGS=(
     "rofi-wayland" "mako" 
     "kitty" "sddm"
     "dolphin" "ark"
-    "polkit-gnome"
+    "polkit-gnome" "gnome-keyring"
     "grim" "slurp" "wl-clipboard" "swappy"
     "libadwaita" "gtk4-layer-shell"
     "qt5-wayland" "qt6-wayland"
@@ -46,7 +47,7 @@ HYPR_PKGS=(
 
 APPS_PKGS=(
     "firefox" "vlc" "obs-studio" "discord" "steam" "krita"
-    "code" "docker" "docker-compose" "jdk21-openjdk"
+    "code" "jdk21-openjdk" "spotify-launcher"
     "zsh" "zsh-autosuggestions" "zsh-syntax-highlighting"
     "gamemode" "lib32-gamemode" "mangohud"
 )
@@ -54,10 +55,9 @@ APPS_PKGS=(
 ALL_PKGS=("${SYS_PKGS[@]}" "${HYPR_PKGS[@]}" "${APPS_PKGS[@]}")
 
 # ------------------------------------------------------------------------------
-# 2. DEFINICIÓN DE PAQUETES AUR (Paru)
+# 2. AUR PACKAGE DEFINITIONS (Paru)
 # ------------------------------------------------------------------------------
 AUR_PKGS=(
-    "paru-bin" 
     "hyprsunset"
     "sbctl"
     "eww-git"
@@ -68,15 +68,15 @@ AUR_PKGS=(
 )
 
 # ------------------------------------------------------------------------------
-# FUNCIONES DE INSTALACIÓN
+# INSTALLATION FUNCTIONS
 # ------------------------------------------------------------------------------
 install_pacman_pkgs() {
-    echo -e "\n${BLUE}=== Instalando Paquetes Oficiales ===${NC}"
-    echo "Sincronizando bases de datos..."
-    sudo pacman -Sy
+    echo -e "\n${BLUE}=== Installing Official Packages ===${NC}"
+    echo "Syncing package databases..."
+    sudo pacman -Syu --noconfirm
 
     TO_INSTALL=()
-    echo "Verificando estado de los paquetes..."
+    echo "Checking package status..."
 
     for pkg in "${ALL_PKGS[@]}"; do
         if ! pacman -Qi "$pkg" &> /dev/null; then
@@ -85,18 +85,18 @@ install_pacman_pkgs() {
     done
 
     if [ ${#TO_INSTALL[@]} -gt 0 ]; then
-        echo -e "${YELLOW}Paquetes a instalar (${#TO_INSTALL[@]}): ${TO_INSTALL[*]}${NC}"
+        echo -e "${YELLOW}Packages to install (${#TO_INSTALL[@]}): ${TO_INSTALL[*]}${NC}"
         sudo pacman -S --noconfirm --needed "${TO_INSTALL[@]}"
     else
-        echo -e "${GREEN}[SKIP] Todos los paquetes oficiales ya están instalados.${NC}"
+        echo -e "${GREEN}[SKIP] All official packages are already installed.${NC}"
     fi
 }
 
 install_aur_pkgs() {
-    echo -e "\n${BLUE}=== Instalando Paquetes AUR ===${NC}"
+    echo -e "\n${BLUE}=== Installing AUR Packages ===${NC}"
 
     if ! command -v paru &> /dev/null; then
-        echo -e "${YELLOW}Paru no encontrado. Instalando manualmente...${NC}"
+        echo -e "${YELLOW}Paru not found. Installing manually...${NC}"
         TEMP_DIR="$HOME/tmp_paru_install"
         mkdir -p "$TEMP_DIR"
         
@@ -105,36 +105,36 @@ install_aur_pkgs() {
             makepkg -si --noconfirm
             cd "$HOME"
             rm -rf "$TEMP_DIR"
-            echo -e "${GREEN}[OK] Paru instalado correctamente.${NC}"
+            echo -e "${GREEN}[OK] Paru installed successfully.${NC}"
         else
-            echo -e "${RED}[ERROR] Falló la clonación de Paru.${NC}"
+            echo -e "${RED}[ERROR] Failed to clone Paru.${NC}"
             exit 1
         fi
     else
-        echo -e "${GREEN}[SKIP] Paru ya está instalado.${NC}"
+        echo -e "${GREEN}[SKIP] Paru is already installed.${NC}"
     fi
 
-    echo "Verificando paquetes AUR..."
+    echo "Checking AUR packages..."
     for pkg in "${AUR_PKGS[@]}"; do
         if ! pacman -Qm "$pkg" &> /dev/null && ! pacman -Qi "$pkg" &> /dev/null; then
-            echo -e "Instalando AUR: ${YELLOW}$pkg${NC}..."
+            echo -e "Installing AUR: ${YELLOW}$pkg${NC}..."
             paru -S --noconfirm --needed "$pkg"
         else
-            echo -e "${GREEN}[SKIP] $pkg ya está instalado.${NC}"
+            echo -e "${GREEN}[SKIP] $pkg is already installed.${NC}"
         fi
     done
 }
 
 # ------------------------------------------------------------------------------
-# 3. LINKEO DE DOTFILES (Symlinks)
+# 3. DOTFILE LINKING (Symlinks)
 # ------------------------------------------------------------------------------
 link_dotfiles() {
-    echo -e "\n${BLUE}=== Configurando Dotfiles (Symlinks) ===${NC}"
+    echo -e "\n${BLUE}=== Setting Up Dotfiles (Symlinks) ===${NC}"
 
     CONFIG_DIR="$HOME/.config"
     mkdir -p "$CONFIG_DIR"
 
-    # A) Carpetas estándar
+    # A) Standard config folders
     FOLDERS_TO_LINK=("eww" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "micro" "paru" "rofi")
 
     for folder in "${FOLDERS_TO_LINK[@]}"; do
@@ -144,18 +144,18 @@ link_dotfiles() {
             if [ -d "$DEST" ] && [ ! -L "$DEST" ]; then
                 mv "$DEST" "${DEST}.backup.$(date +%s)"
             fi
-            echo "Enlazando: $folder"
+            echo "Linking: $folder"
             ln -sf "$SRC" "$DEST"
         fi
     done
 
     # B) ZSH
-    echo "Configurando ZSH..."
+    echo "Setting up ZSH..."
     if [ -f "$REPO_DIR/zsh/.zshrc" ]; then ln -sf "$REPO_DIR/zsh/.zshrc" "$HOME/.zshrc"; fi
     if [ -f "$REPO_DIR/zsh/.p10k.zsh" ]; then ln -sf "$REPO_DIR/zsh/.p10k.zsh" "$HOME/.p10k.zsh"; fi
 
     # C) VS CODE
-    echo "Configurando VS Code..."
+    echo "Setting up VS Code..."
     CODE_USER_DIR="$HOME/.config/Code - OSS/User"
     mkdir -p "$CODE_USER_DIR"
     if [ -f "$REPO_DIR/vscode/settings.json" ]; then
@@ -165,33 +165,33 @@ link_dotfiles() {
         ln -sf "$REPO_DIR/vscode/settings.json" "$CODE_USER_DIR/settings.json"
     fi
 
-    # D) EXTRAS (Git y Wallpapers)
+    # D) EXTRAS (Git and Wallpapers)
     if [ -f "$REPO_DIR/.gitconfig" ]; then ln -sf "$REPO_DIR/.gitconfig" "$HOME/.gitconfig"; fi
 
     if [ -d "$REPO_DIR/wallpaper" ]; then
         TARGET_LINK="$HOME/Images"
-        # Si ya existe carpeta real, la movemos a un lado (backup)
+        # Backup existing real directory if it exists
         if [ -d "$TARGET_LINK" ] && [ ! -L "$TARGET_LINK" ]; then
              mv "$TARGET_LINK" "${TARGET_LINK}.backup.$(date +%s)"
         fi
         ln -sf "$REPO_DIR/wallpaper" "$TARGET_LINK"
-        echo " -> Wallpapers enlazados como ~/Images"
+        echo " -> Wallpapers linked as ~/Images"
     fi
 }
 
 # ------------------------------------------------------------------------------
-# 4. COPIA DE ARCHIVOS DE SISTEMA (Requiere Root)
+# 4. SYSTEM CONFIG FILES (Requires Root)
 # ------------------------------------------------------------------------------
 copy_system_configs() {
-    echo -e "\n${BLUE}=== Copiando Configuraciones del Sistema ===${NC}"
+    echo -e "\n${BLUE}=== Copying System Configurations ===${NC}"
     
     SYS_CONFIGS="$REPO_DIR/system-configs"
     if [ ! -d "$SYS_CONFIGS" ]; then 
-        echo -e "${YELLOW}[SKIP] Carpeta system-configs no encontrada.${NC}"
+        echo -e "${YELLOW}[SKIP] system-configs folder not found.${NC}"
         return
     fi
 
-    echo "Solicitando permisos de Root..."
+    echo "Requesting Root permissions..."
     sudo -v 
 
     if [ -f "$SYS_CONFIGS/audio_disable_powersave.conf" ]; then
@@ -212,43 +212,50 @@ copy_system_configs() {
         sudo mkdir -p /etc/sddm.conf.d
         sudo cp "$SYS_CONFIGS/wayland.conf" /etc/sddm.conf.d/
     fi
-    echo -e "${GREEN}[OK] Archivos de sistema copiados.${NC}"
+
+    # Copy SDDM theme
+    if [ -d "$REPO_DIR/themes/catppuccin-macchiato" ]; then
+        sudo cp -r "$REPO_DIR/themes/catppuccin-macchiato" /usr/share/sddm/themes/
+        echo -e "${GREEN}[OK] SDDM catppuccin-macchiato theme installed.${NC}"
+    fi
+
+    echo -e "${GREEN}[OK] System files copied.${NC}"
 }
 
 # ------------------------------------------------------------------------------
-# 5. CONFIGURACIÓN DE HARDWARE (Red, Teclado, Monitores)
+# 5. HARDWARE SETUP (Network, Keyboard, Monitors)
 # ------------------------------------------------------------------------------
 setup_hardware() {
-    echo -e "\n${BLUE}=== Configuración de Hardware ===${NC}"
+    echo -e "\n${BLUE}=== Hardware Configuration ===${NC}"
     HYPR_DIR="$HOME/.config/hypr"
     mkdir -p "$HYPR_DIR"
 
-    # --- A) RED (Eww) ---
-    echo "Configurando Red..."
-    RAW_INTERFACES=$(ip -o -4 addr show up scope global | grep -vE "docker|br-|veth|virbr")
+    # --- A) NETWORK (Eww) ---
+    echo "Configuring Network..."
+    RAW_INTERFACES=$(ip -o -4 addr show up scope global | grep -vE "docker|br-|veth|virbr" || true)
     if [ -n "$RAW_INTERFACES" ]; then
         echo "$RAW_INTERFACES" | awk '{print "  -> " $2 " : " $4}'
-        LISTA_NOMBRES=$(echo "$RAW_INTERFACES" | awk '{print $2}')
+        IFACE_NAMES=$(echo "$RAW_INTERFACES" | awk '{print $2}')
     else
         ip -o link show up | grep -v "lo" | awk -F': ' '{print "  -> " $2}'
-        LISTA_NOMBRES=$(ip -o link show up | grep -v "lo" | awk -F': ' '{print $2}')
+        IFACE_NAMES=$(ip -o link show up | grep -v "lo" | awk -F': ' '{print $2}' || true)
     fi
 
-    DEFAULT_IFACE=$(echo "$LISTA_NOMBRES" | head -n1)
-    echo -n "Escribe el NOMBRE de la interfaz (Enter para '$DEFAULT_IFACE'): "
+    DEFAULT_IFACE=$(echo "$IFACE_NAMES" | head -n1)
+    echo -n "Enter the interface NAME (press Enter for '$DEFAULT_IFACE'): "
     read USER_IFACE
     if [ -z "$USER_IFACE" ]; then USER_IFACE="$DEFAULT_IFACE"; fi
     
     mkdir -p "$HOME/.config/eww/scripts"
     echo "$USER_IFACE" > "$HOME/.config/eww/scripts/target_interface" 2>/dev/null || true
-    echo -e "${GREEN}[OK] Interfaz '$USER_IFACE' guardada.${NC}"
+    echo -e "${GREEN}[OK] Interface '$USER_IFACE' saved.${NC}"
 
-    # --- B) TECLADO ---
-    echo -e "\nDetectando distribución de teclado..."
-    CURRENT_LAYOUT=$(localectl status | grep "X11 Layout" | awk '{print $3}')
+    # --- B) KEYBOARD ---
+    echo -e "\nDetecting keyboard layout..."
+    CURRENT_LAYOUT=$(localectl status | grep "X11 Layout" | awk '{print $3}' || true)
     if [ -z "$CURRENT_LAYOUT" ]; then CURRENT_LAYOUT="us"; fi
 
-    echo -n "Introduce tu Layout (ej: us, latam, es) [Enter para '$CURRENT_LAYOUT']: "
+    echo -n "Enter your keyboard layout (e.g: us, latam, es) [Enter for '$CURRENT_LAYOUT']: "
     read USER_KB_LAYOUT
     if [ -z "$USER_KB_LAYOUT" ]; then USER_KB_LAYOUT="$CURRENT_LAYOUT"; fi
 
@@ -266,11 +273,11 @@ input {
     }
 }
 EOF
-    echo -e "${GREEN}[OK] input.conf generado.${NC}"
+    echo -e "${GREEN}[OK] input.conf generated.${NC}"
 
-    # --- C) MONITORES ---
+    # --- C) MONITORS ---
     if [ ! -f "$HYPR_DIR/monitors.conf" ]; then
-        echo -e "\n${BLUE}=== Configuración de Monitores ===${NC}"
+        echo -e "\n${BLUE}=== Monitor Configuration ===${NC}"
         DETECTED_MONITORS=()
         for connector in /sys/class/drm/card*-*; do
             if [ -f "$connector/status" ] && [ "$(cat "$connector/status")" == "connected" ]; then
@@ -283,11 +290,11 @@ EOF
         if [ ${#DETECTED_MONITORS[@]} -eq 0 ]; then
             MON_1="HDMI-A-1"; MON_2="DP-1"
         else
-            echo "Monitores encontrados:"
+            echo "Detected monitors:"
             i=1
-            for mon in "${DETECTED_MONITORS[@]}"; do echo -e "  $i) $mon"; ((i++)); done
+            for mon in "${DETECTED_MONITORS[@]}"; do echo -e "  $i) $mon"; ((i++)) || true; done
             
-            echo -n "Selecciona el Monitor PRINCIPAL (Default 1): "
+            echo -n "Select PRIMARY monitor (Default 1): "
             read SELECTION
             if [ -z "$SELECTION" ]; then SELECTION=1; fi
             INDEX=$((SELECTION - 1))
@@ -300,9 +307,9 @@ EOF
             done
         fi
 
-        echo -e "   -> Principal: $MON_1"
+        echo -e "   -> Primary: $MON_1"
         
-        # Generar monitors.conf
+        # Generate monitors.conf
         cat > "$HYPR_DIR/monitors.conf" <<EOF
 monitor=$MON_1,preferred,auto,1
 EOF
@@ -312,7 +319,7 @@ EOF
 
         cat >> "$HYPR_DIR/monitors.conf" <<EOF
 
-# WS Principal
+# Primary Monitor Workspaces
 workspace=1, monitor:$MON_1
 workspace=2, monitor:$MON_1
 workspace=3, monitor:$MON_1
@@ -328,7 +335,7 @@ workspace = 5, gapsin:5, gapsout:55 5 5 5
 EOF
         if [ -n "$MON_2" ]; then
             cat >> "$HYPR_DIR/monitors.conf" <<EOF
-# WS Secundario
+# Secondary Monitor Workspaces
 workspace=6, monitor:$MON_2
 workspace=7, monitor:$MON_2
 workspace=8, monitor:$MON_2
@@ -338,42 +345,66 @@ workspace=98, monitor:$MON_2
 EOF
         else
             cat >> "$HYPR_DIR/monitors.conf" <<EOF
-# WS Secundarios (Flotantes o Futuro Monitor)
+# Secondary Workspaces (Floating or Future Monitor)
 # workspace=6, monitor:DP-X
 EOF
         fi
-        echo -e "${GREEN}[OK] monitors.conf generado.${NC}"
+        echo -e "${GREEN}[OK] monitors.conf generated.${NC}"
     else
-        echo -e "${YELLOW}[SKIP] monitors.conf ya existe.${NC}"
+        echo -e "${YELLOW}[SKIP] monitors.conf already exists.${NC}"
     fi
 
-    # --- D) HARDWARE EXTRA ---
+    # --- D) EXTRA HARDWARE ---
     if [ ! -f "$HYPR_DIR/hardware.conf" ]; then
-        echo "Generando plantilla hardware.conf..."
+        echo "Generating hardware.conf template..."
         cat > "$HYPR_DIR/hardware.conf" <<EOF
-# Configuración específica (Tabletas, Mouse, etc)
+# Device-specific configuration (Tablets, Mouse, etc)
 # device { name = ... }
 EOF
     fi
 }
 
 # ------------------------------------------------------------------------------
-# EJECUCIÓN FINAL (El pegamento que faltaba)
+# 6. ENABLE ESSENTIAL SERVICES
+# ------------------------------------------------------------------------------
+enable_services() {
+    echo -e "\n${BLUE}=== Enabling Essential Services ===${NC}"
+    sudo systemctl enable NetworkManager
+    sudo systemctl enable bluetooth
+    sudo systemctl enable sddm
+
+    # Change default shell to ZSH
+    if [ "$SHELL" != "/usr/bin/zsh" ]; then
+        echo "Changing default shell to ZSH..."
+        chsh -s /usr/bin/zsh
+        echo -e "${GREEN}[OK] Shell changed to ZSH (will apply on next login).${NC}"
+    else
+        echo -e "${GREEN}[SKIP] ZSH is already the default shell.${NC}"
+    fi
+
+    echo -e "${GREEN}[OK] Services enabled.${NC}"
+}
+
+# ------------------------------------------------------------------------------
+# FINAL EXECUTION
 # ------------------------------------------------------------------------------
 
-# 1. Instalar paquetes
+# 1. Install packages
 install_pacman_pkgs
 install_aur_pkgs
 
-# 2. Configurar hardware (Red, Teclado, Monitores)
+# 2. Configure hardware (Network, Keyboard, Monitors)
 setup_hardware
 
-# 3. Enlazar dotfiles y copiar configs de sistema
+# 3. Link dotfiles and copy system configs
 link_dotfiles
 copy_system_configs
 
+# 4. Enable services
+enable_services
+
 echo -e "\n${GREEN}==========================================${NC}"
-echo -e "${GREEN}   ¡INSTALACIÓN COMPLETADA!  ${NC}"
+echo -e "${GREEN}   INSTALLATION COMPLETE!  ${NC}"
 echo -e "${GREEN}==========================================${NC}"
-echo "Es altamente recomendable reiniciar ahora."
-echo "Comando: reboot"
+echo "It is highly recommended to reboot now."
+echo "Command: reboot"

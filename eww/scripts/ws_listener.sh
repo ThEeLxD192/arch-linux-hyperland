@@ -28,13 +28,13 @@ output_workspaces() {
 
 output_workspaces
 
-# Comprueba si las variables necesarias existen
+# Check if required variables exist
 if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ] || [ -z "$XDG_RUNTIME_DIR" ]; then
-    echo "{\"error\": \"HYPRLAND_INSTANCE_SIGNATURE o XDG_RUNTIME_DIR no están definidas.\"}" >&2
+    echo "{\"error\": \"HYPRLAND_INSTANCE_SIGNATURE or XDG_RUNTIME_DIR are not defined.\"}" >&2
 
     export HYPRLAND_INSTANCE_SIGNATURE=$(hyprctl instances -j | jq -r '.[0] | .instance')
     if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-        echo "{\"error\": \"No se pudo obtener HYPRLAND_INSTANCE_SIGNATURE de hyprctl.\"}" >&2
+        echo "{\"error\": \"Could not get HYPRLAND_INSTANCE_SIGNATURE from hyprctl.\"}" >&2
         exit 1
     fi
 fi
@@ -42,7 +42,7 @@ fi
 SOCKET_PATH="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
 
 if [ ! -S "$SOCKET_PATH" ]; then
-    echo "{\"error\": \"El socket no se encontró en: $SOCKET_PATH\"}" >&2
+    echo "{\"error\": \"Socket not found at: $SOCKET_PATH\"}" >&2
     exit 1
 fi
 
